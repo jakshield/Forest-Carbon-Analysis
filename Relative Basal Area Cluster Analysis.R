@@ -1,0 +1,52 @@
+#Install packages
+library(dplyr)
+library(reshape)
+library(vegan)
+library(labdsv)
+
+#Calculate Relative Basal Area Per Species
+volume<-Tree.Data%>%
+  mutate(basal.area = (dbh.cm^2)*0.0000785)%>%
+  group_by(plot.name, species.code)%>%
+  summarise(total.ba = sum(basal.area))%>%
+  mutate(relative.ba = prop.table(total.ba))
+
+#Create Site x Species Matrix and Save as Dataframe
+volume.sp <- cast(volume, plot_name ~ species_code, value='relative.ba', FUN=mean)
+volume.sp < -as.data.frame(volume.sp)
+volume.sp[is.na(volume.sp)] <- 0
+
+#Make a Plot Legend 
+plot.legend<-volume.sp$plot_name
+
+#Remove Plot name column
+volume.sp<-volume.sp[,-1]
+
+#Create distance matrix
+volume.dist<-vegdist(volume.sp)
+
+#Create Cluster
+volume.clust<-hclust(volume.dist, method = "ward.D2")
+
+#Create Dendrogram
+plot(volume.clust, hang = -1)
+
+
+#Create classes using cutree
+rect.hclust(volume.clust, 4)
+cut<-cutree(volume.clust,k = 4)
+table(cut)
+
+##Principal Coordinates Analysis
+pcoa<-cmdscale(volume.dist)
+
+#Plot
+ordiplot(pcoa)
+ordihull(pcoa, cut)
+orditorp(pcoa,display="sites",cex=.7,air=.3, col = 'red')
+ordispider(pcoa, cut, spiders = "centroid", label = T)
+
+
+###Indicator Species
+indc<-indval(volume.sp, cut)
+summary(indc)
