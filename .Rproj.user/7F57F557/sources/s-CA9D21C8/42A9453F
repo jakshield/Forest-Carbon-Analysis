@@ -1,0 +1,24 @@
+{
+    "id": "42A9453F",
+    "path": "~/GitHub/Forest-Carbon-Analysis/data_biomass_fn.R",
+    "project_path": "data_biomass_fn.R",
+    "type": "r_source",
+    "hash": "1589856751",
+    "contents": "",
+    "dirty": false,
+    "created": 1603919740964.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "cursorPosition": "0,0",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1603919748,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1603919748224,
+    "read_only": false,
+    "read_only_alternatives": []
+}

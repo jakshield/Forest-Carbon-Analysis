@@ -1,4 +1,4 @@
-eren_data_biomass_fn<-function(x){
+data_biomass_fn<-function(x){
   #Coerece DBH to numeric class(just in case)
   x$dbh.cm<-as.numeric(x$dbh.cm)
   

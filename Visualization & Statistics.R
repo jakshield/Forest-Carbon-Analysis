@@ -1,7 +1,7 @@
 #Library
 library(ggplot2)
 library(ggpubr)
-
+library(car)
 
 ### Mean and SE of plots
 #Take mean and se of WWC plots
@@ -14,7 +14,7 @@ mean(plot_carbon_stock[,3])
 
 ###Graph of plot carbon
 #ungrouped 
-ggplot(plot_carbon_stock,aes(plot_name, carbon_stock, color = plot_name))+
+carbon.stock<-ggplot(plot_carbon_stock,aes(plot_name, carbon_stock, color = plot_name))+
   geom_point()+
   geom_hline(yintercept = mean(plot_carbon_stock$carbon_stock), linetype = "dashed", color = "red")+
   labs(x= "Plot Name", y = "Carbon Stock (Mg/ha)", title = "Plot Carbon Stock")+
@@ -23,7 +23,7 @@ ggplot(plot_carbon_stock,aes(plot_name, carbon_stock, color = plot_name))+
 
 
 #Grouped by forest type
-ggplot(plot_carbon_stock,aes(plot_name, carbon_stock, color = indc_spp))+
+plot.carbon.stock.forest.type<-ggplot(plot_carbon_stock,aes(plot_name, carbon_stock, color = indc_spp))+
   geom_point()+
   geom_hline(yintercept = mean(plot_carbon_stock$carbon_stock), linetype = "dashed", color = "red")+
   labs(x= "Plot Name", y = "Carbon Stock (Mg/ha)", title = "Plot Carbon Stock")+
@@ -33,7 +33,7 @@ ggplot(plot_carbon_stock,aes(plot_name, carbon_stock, color = indc_spp))+
 
 #### Plot Carbon and Forest Type
 #boxplot
-ggplot(plot_carbon_stock, aes(x = indc_spp, y = carbon_stock, fill = indc_spp))+
+plot.carbon.boxplot<-ggplot(plot_carbon_stock, aes(x = indc_spp, y = carbon_stock, fill = indc_spp))+
   geom_boxplot()+
   geom_point()+
   labs(x = "Forest Type", y = "Carbon Stock Mg/ha", title = "Average Carbon Stock of Forest Type")+
@@ -41,27 +41,17 @@ ggplot(plot_carbon_stock, aes(x = indc_spp, y = carbon_stock, fill = indc_spp))+
 
 ##ANOVA
 forest_group.aov<-aov(carbon_stock~indc_spp, plot_carbon_stock)
-summary(forest_group.aov)
-#Post Hoc Tukey
-TukeyHSD(forest_group.aov)
 
 
 ###Assumption Tests
-#Check Outliers
-plot_carbon_stock%>%
-  group_by(indc_spp)%>%
-  identify_outliers(carbon_stock)
 #Normality
-#By Group
-plot_carbon_stock%>%
-  group_by(indc_spp)%>%
-  shapiro_test(carbon_stock)
-#By Total Population
-shapiro_test(residuals(forest_group.aov))
+shapiro.test(residuals(forest_group.aov))
+
 #Homogneity  of Variance 
 leveneTest(carbon_stock~indc_spp, plot_carbon_stock)
 
-#Post Hoc Tukey
+#Summary
+summary(forest_group.aov)
 TukeyHSD(forest_group.aov)
 
 ###Basal Area
@@ -78,15 +68,15 @@ summary(basal_area.aov)
 TukeyHSD(basal_area.aov)
 
 #regression 
-bruh<-ggscatter(plot_carbon_stock, x = "ba_sqm_ha", y = "carbon_stock", color = "indc_spp", add = "reg.line")+
+f.type<-ggscatter(plot_carbon_stock, x = "ba_sqm_ha", y = "carbon_stock", color = "indc_spp", add = "reg.line")+
   stat_regline_equation(aes(label =  paste(..eq.label..,..rr.label.., sep = "~~~~"), color = indc_spp), label.x.npc = 0.75, label.y.npc = 0.51, show.legend = F)+
   labs(x = "Plot Basal Area sq. m/ha", y = " Carbon Stock Mg/ha")+
   theme(legend.position = "right")
 
-ggpar(bruh, legend.title = "Forest Type")
+ggpar(f.type, legend.title = "Forest Type")
 
 #size class
-ggplot(all_plot, aes(size_class, tree_carbon_mg*forest_group_ef))+
+ggplot(tree.summary, aes(size_class, tree_carbon_mg*forest_group_ef))+
   geom_bar(stat = "identity")+
   facet_wrap(~forest_group_spp)+
   aes(fill = forest_group_spp)+
@@ -106,17 +96,17 @@ TukeyHSD(aov(large_prop~indc_spp, plot_carbon_stock))
 
 
 #regression
-bruh2<-ggscatter(plot_carbon_stock,x = "large_prop", y="carbon_stock",add = "reg.line")+
+l.trees<-ggscatter(plot_carbon_stock,x = "large_prop", y="carbon_stock",add = "reg.line")+
   geom_point(aes(color = indc_spp))+
   stat_cor(aes(label = paste(..rr.label.., ..p.label.., sep = "~`,`~")),label.x = 0.17, label.y = 75)+
   stat_regline_equation(label.x = 0.17, label.y = 100)+
   theme(legend.position = "right")+
   labs(x = "Proportion of Carbon in trees >50 cm DBH", y = "Carbon Stock (Mg/ha)")
 
-ggpar(bruh2, legend.title = "Forest Type")
+ggpar(l.trees, legend.title = "Forest Type")
 
 
 ### Histogram of size classes
-ggplot(all_plot,aes(dbh_cm))+
+ggplot(tree.summary,aes(dbh_cm))+
   geom_histogram()+
   facet_wrap(~forest_group_spp)
